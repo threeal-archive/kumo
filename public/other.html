@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Camera Monitor</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href="/css/material-icons.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="/css/materialize.min.css"/>
+    <link rel="icon" href="/icon/favicon.ico" type="image/x-icon"/>
+    <script src="/js/materialize.min.js"></script>
+    <script src="/js/eventemitter2.min.js"></script>
+    <script src="/js/roslib.js"></script>
+    <script src="/js/pathheader.js"></script>
+    <script>
+      function kumoLog(message) {
+        M.toast({html: message});
+      }
+
+      let ros = new ROSLIB.Ros();
+
+      ros.connect('ws://' + window.location.hostname + ':9090');
+
+      ros.on('connection', function() {
+        kumoLog('connected to server!');
+
+        var compressedImageTopic = new ROSLIB.Topic({
+          ros: ros,
+          name: '/camera/compressed_image',
+          messageType: 'sensor_msgs/CompressedImage'
+        });
+
+        compressedImageTopic.subscribe(function(message) {
+
+          const img = document.getElementById('compressed_img');
+
+          var bytes = new Uint8Array(message.data);
+          var blob = new Blob([bytes.buffer]);
+
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            img.src = e.target.result;
+          };
+
+          reader.readAsDataURL(blob);
+        });
+
+        var getParametersService = new ROSLIB.Service({
+          ros: ros,
+          name: '/camera/get_parameters',
+          serviceType: 'rcl_interfaces/srv/GetParameters'
+        });
+
+        var setParametersService = new ROSLIB.Service({
+          ros: ros,
+          name: '/camera/set_parameters',
+          serviceType: 'rcl_interfaces/srv/SetParameters'
+        });
+
+        var request = new ROSLIB.ServiceRequest({
+          names: ['brightness'],
+        });
+
+        getParametersService.callService(request, function(result) {
+          console.log(result);
+        });
+
+        const brightness_update = function(value) {
+          brightness_parameter.get(function(prev) {
+            brightness_parameter.set(prev + value);
+          });
+        };
+      });
+
+      ros.on('close', function() {
+        kumoLog('closed from server!');
+      });
+
+      ros.on('error', function(error) {
+        kumoLog('server error!');
+      });
+
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col s12 m6">
+          <div class="card-panel">
+            <img class="responsive-img" id="compressed_img">
+          </div>
+        </div>
+        <div class="col s12 m6">
+          <div class="card-panel">
+            <table class="highlight">
+              <tbody>
+                <tr>
+                  <td>Brightness</td>
+                  <td><center>
+                    <a class="waves-effect waves-light btn-small" onclick="brightness_update(-5);">-5</a>
+                  </center></td>
+                  <td><center><span id="brightness_span">0</span></center></td>
+                  <td><center>
+                    <a class="waves-effect waves-light btn-small" onclick="brightness_update(5);">+5</a>
+                  </center></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

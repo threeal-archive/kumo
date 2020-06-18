@@ -1,0 +1,27 @@
+{
+  "name": "kumo",
+  "version": "0.1.0",
+  "description": "Web tools for ROS 2",
+  "main": "index.js",
+  "keywords": [
+    "ros2",
+    "webserver"
+  ],
+  "bin": {
+    "kumo": "bin/kumo.js"
+  },
+  "license": "MIT License",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/threeal/kumo.git"
+  },
+  "authors": [
+    "Alfi Maulana <alfi.maulana.f@gmail.com>"
+  ],
+  "dependencies": {
+    "express": "^4.17.1",
+    "pug": "^3.0.0",
+    "rclnodejs": "0.14.0",
+    "ros2-web-bridge": "^0.3.0"
+  }
+}
