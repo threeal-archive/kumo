@@ -10,7 +10,10 @@ const app = express();
 const path = require('path');
 const fs = require('fs');
 
-let publicPaths = [ path.join(__dirname, '../public') ];
+let publicPaths = [
+  path.resolve(__dirname, '../public'),
+  path.resolve(__dirname, '../dist'),
+];
 
 const amentPaths = process.env.AMENT_PREFIX_PATH.split(':');
 amentPaths.forEach((amentPath) => {
